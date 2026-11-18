@@ -204,6 +204,7 @@ When `ami_id` is not set, the module looks up the latest Canonical Ubuntu 22.04 
 
 The module creates 3 resources.
 
+<img width="1704" height="414" alt="Screenshot 2026-11-18 131729" src="https://github.com/user-attachments/assets/de46138e-9a79-4f9e-acd3-8c3823d6ed34" />
 
 ## Step 6: EKS Module
 
@@ -221,6 +222,8 @@ The ECR read-only policy on the node role lets the worker nodes pull images from
 
 The module creates 8 resources. Before using the Kubernetes version on real AWS, confirm that it is currently supported by EKS.
 
+<img width="1706" height="433" alt="Screenshot 2026-11-18 131853" src="https://github.com/user-attachments/assets/ce79c7bf-2c4a-4998-b000-5d708f4a3a7c" />
+<img width="1698" height="898" alt="image" src="https://github.com/user-attachments/assets/83c844bf-d1cc-4885-8549-4926e61ba1e4" />
 
 ## Step 7: Plan and Apply
 
@@ -233,7 +236,7 @@ Saving the plan to a file guarantees that `apply` runs exactly the reviewed acti
 
 Total resources created by the configuration: 35 (network 18, ECR 6, server 3, EKS 8).
 
-![terraform apply](../docs/screenshots/step3-08-apply.png)
+<img width="1707" height="1019" alt="image" src="https://github.com/user-attachments/assets/07be9dec-c5d3-47fe-9138-96fa1bb238ab" />
 
 ## Validation
 
@@ -284,7 +287,7 @@ Expected results:
 | State file | `terraform.tfstate` present in the S3 bucket |
 | `terraform plan` | `No changes. Your infrastructure matches the configuration.` |
 
-![Validation results](../docs/screenshots/step3-09-validation.png)
+<img width="1706" height="889" alt="image" src="https://github.com/user-attachments/assets/7b402e04-52a0-4030-aa9f-f71cecdb442d" />
 
 ## Floci Compatibility Notes
 
@@ -315,14 +318,6 @@ These items affect only the emulator. The module code is written for AWS.
 3. Authenticate with AWS credentials and run `terraform init -reconfigure -backend-config=backend-aws.hcl`.
 
 This path has not been executed against a real account in this project. Review costs first: the NAT Gateway and the EKS control plane are billed hourly.
-
-## Cleanup
-
-```bash
-terraform destroy
-```
-
-The state bucket and the lock table are created outside Terraform and are removed separately.
 
 ## Conclusion
 
