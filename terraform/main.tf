@@ -6,4 +6,5 @@ module "network" {
   azs                  = var.azs
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
+  admin_cidr           = var.admin_cidr
 }
