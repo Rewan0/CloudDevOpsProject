@@ -1,0 +1,20 @@
+---
+- name: Configure the Jenkins server
+  hosts: role_jenkins
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Bootstrap Python (needed by Ansible modules)
+      ansible.builtin.raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+  roles:
+    - { role: common, tags: [common] }
+    - { role: java, tags: [java] }
+    - { role: docker, tags: [docker] }
+    - { role: jenkins, tags: [jenkins] }
+    - { role: trivy, tags: [trivy] }

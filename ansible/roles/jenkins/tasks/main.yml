@@ -1,0 +1,91 @@
+---
+- name: Remove the retired Jenkins signing key and repository entry
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/keyrings/jenkins-keyring.asc
+    - /etc/apt/sources.list.d/jenkins.list
+
+- name: Download the Jenkins repository signing key
+  ansible.builtin.get_url:
+    url: "{{ jenkins_key_url }}"
+    dest: "{{ jenkins_key_dest }}"
+    mode: "0644"
+  register: jenkins_key
+  retries: 3
+  delay: 10
+  until: jenkins_key is succeeded
+
+- name: Add the Jenkins apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ jenkins_key_dest }}] {{ jenkins_repo_url }} binary/"
+    filename: jenkins-2026
+    state: present
+
+- name: Install Jenkins
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: true
+  register: jenkins_install
+  retries: 3
+  delay: 10
+  until: jenkins_install is succeeded
+
+- name: Allow the jenkins user to use Docker
+  ansible.builtin.user:
+    name: jenkins
+    groups: "{{ jenkins_extra_groups }}"
+    append: true
+
+- name: Enable and start Jenkins (systemd hosts)
+  ansible.builtin.systemd:
+    name: jenkins
+    state: started
+    enabled: true
+  when: ansible_facts['service_mgr'] == "systemd"
+
+- name: Check whether Jenkins is already running (hosts without systemd)
+  ansible.builtin.command: pgrep -f jenkins.war
+  register: jenkins_running
+  failed_when: false
+  changed_when: false
+  when: ansible_facts['service_mgr'] != "systemd"
+
+- name: Ensure the Jenkins log directory exists
+  ansible.builtin.file:
+    path: "{{ jenkins_log_dir }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+  when: ansible_facts['service_mgr'] != "systemd"
+
+- name: Start Jenkins directly (hosts without systemd)
+  ansible.builtin.shell: >-
+    setsid su -s /bin/sh jenkins -c
+    'nohup /usr/bin/java -Djava.awt.headless=true
+    -DJENKINS_HOME={{ jenkins_home }}
+    -jar /usr/share/java/jenkins.war
+    --httpPort={{ jenkins_http_port }}
+    > {{ jenkins_log_dir }}/jenkins.log 2>&1 < /dev/null &'
+  when:
+    - ansible_facts['service_mgr'] != "systemd"
+    - jenkins_running.rc != 0
+
+- name: Wait for Jenkins to listen
+  ansible.builtin.wait_for:
+    port: "{{ jenkins_http_port }}"
+    delay: 5
+    timeout: 300
+
+- name: Check the initial admin password file
+  ansible.builtin.stat:
+    path: "{{ jenkins_home }}/secrets/initialAdminPassword"
+  register: jenkins_initial_password
+
+- name: Show where to read the initial admin password
+  ansible.builtin.debug:
+    msg: "Read it on the server: cat {{ jenkins_home }}/secrets/initialAdminPassword"
+  when: jenkins_initial_password.stat.exists

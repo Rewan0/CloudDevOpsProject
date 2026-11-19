@@ -1,0 +1,26 @@
+---
+- name: Download the Trivy repository signing key
+  ansible.builtin.get_url:
+    url: "{{ trivy_key_url }}"
+    dest: /etc/apt/keyrings/trivy.asc
+    mode: "0644"
+  register: trivy_key
+  retries: 3
+  delay: 10
+  until: trivy_key is succeeded
+
+- name: Add the Trivy apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/trivy.asc] {{ trivy_repo_url }} {{ ansible_facts['distribution_release'] }} main"
+    filename: trivy
+    state: present
+
+- name: Install Trivy
+  ansible.builtin.apt:
+    name: trivy
+    state: present
+    update_cache: true
+  register: trivy_install
+  retries: 3
+  delay: 10
+  until: trivy_install is succeeded

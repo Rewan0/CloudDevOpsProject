@@ -1,0 +1,6 @@
+---
+# Floci injects the key pair for root and forwards SSH to a local port
+ansible_user: root
+ansible_port: 2200
+ansible_become: false
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"

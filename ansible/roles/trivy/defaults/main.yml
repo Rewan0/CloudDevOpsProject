@@ -1,0 +1,3 @@
+---
+trivy_key_url: https://aquasecurity.github.io/trivy-repo/deb/public.key
+trivy_repo_url: https://aquasecurity.github.io/trivy-repo/deb

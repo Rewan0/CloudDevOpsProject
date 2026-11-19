@@ -1,0 +1,5 @@
+---
+java_version: 21
+java_packages:
+  - "openjdk-{{ java_version }}-jre-headless"
+  - fontconfig

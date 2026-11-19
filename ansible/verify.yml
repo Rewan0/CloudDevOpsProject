@@ -1,0 +1,33 @@
+---
+- name: Verify the Jenkins server configuration
+  hosts: role_jenkins
+  gather_facts: false
+  vars:
+    jenkins_http_port: 8080
+
+  tasks:
+    - name: Collect tool versions
+      ansible.builtin.shell: "{{ item.cmd }}"
+      loop:
+        - { name: java, cmd: "java -version 2>&1 | head -1" }
+        - { name: docker, cmd: "docker --version" }
+        - { name: trivy, cmd: "trivy --version | head -1" }
+        - { name: jenkins-groups, cmd: "id jenkins" }
+      register: tool_versions
+      changed_when: false
+
+    - name: Show versions
+      ansible.builtin.debug:
+        msg: "{{ item.item.name }}: {{ item.stdout }}"
+      loop: "{{ tool_versions.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: Check that Jenkins answers over HTTP
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ jenkins_http_port }}/login"
+        status_code: [200, 403]
+      register: jenkins_http
+      retries: 12
+      delay: 10
+      until: jenkins_http.status is defined and jenkins_http.status in [200, 403]
