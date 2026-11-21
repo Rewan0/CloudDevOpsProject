@@ -1,0 +1,12 @@
+# Use on a real EKS cluster with the AWS EBS CSI driver installed.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ivolve-local
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: true

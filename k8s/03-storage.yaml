@@ -1,0 +1,9 @@
+# Dynamic provisioning through the local-path provisioner of the Floci/k3s cluster.
+# On AWS use k8s/aws/storageclass-ebs.yaml instead (EBS CSI driver).
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ivolve-local
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
